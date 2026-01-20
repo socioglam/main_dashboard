@@ -1,0 +1,158 @@
+{% extends "layout.html" %}
+
+{% block title %}Publishing Dashboard{% endblock %}
+
+{% block head %}
+<style>
+    .actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .platform-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        transition: transform 0.2s;
+    }
+
+    .platform-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary-color);
+    }
+
+    .platform-name {
+        font-weight: 600;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        text-transform: capitalize;
+    }
+
+    .log-container {
+        background-color: #000;
+        color: #0f0;
+        font-family: 'Courier New', Courier, monospace;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        height: 300px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        font-size: 0.9rem;
+        border: 1px solid var(--border-color);
+    }
+
+    .status-indicator {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #64748b;
+        margin-right: 5px;
+    }
+
+    .status-indicator.running {
+        background-color: #eab308;
+        box-shadow: 0 0 10px #eab308;
+    }
+
+    .status-indicator.idle {
+        background-color: #22c55e;
+    }
+
+    .header-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom: 2rem;">
+    <div class="header-actions">
+        <h2>🚀 Control Center</h2>
+        <span id="status-badge"
+            style="padding: 0.5rem 1rem; background: var(--sidebar-bg); border-radius: 20px; border: 1px solid var(--border-color); font-size: 0.9rem;">
+            <span class="status-indicator idle"></span> Ready
+        </span>
+    </div>
+    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+        Trigger posts to all configured platforms or select individual ones.
+    </p>
+    <button onclick="startPublishing()" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem;">
+        ⚡ Publish to ALL Platforms
+    </button>
+</div>
+
+<h3 style="margin-bottom: 1rem;">Individual Modules</h3>
+<div class="actions-grid">
+    {% for module in modules %}
+    <div class="platform-card">
+        <div class="platform-name">{{ module.replace('_', ' ').replace('posting', '') }}</div>
+        <button onclick="startPublishing('{{ module }}')" class="btn btn-primary"
+            style="width: 100%; font-size: 0.9rem;">
+            Publish
+        </button>
+    </div>
+    {% endfor %}
+</div>
+
+<h3 style="margin-bottom: 1rem;">Live Logs</h3>
+<div class="log-container" id="log-output">Waiting for action...</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function startPublishing(platform = null) {
+        const logContainer = document.getElementById('log-output');
+        const statusBadge = document.querySelector('.status-indicator');
+        const statusText = document.querySelector('#status-badge');
+
+        logContainer.innerHTML = "Initializing...\n";
+        statusBadge.className = 'status-indicator running';
+        statusBadge.nextSibling.textContent = " Running...";
+
+        fetch('/publish', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ platform: platform })
+        })
+            .then(response => {
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                function read() {
+                    reader.read().then(({ done, value }) => {
+                        if (done) {
+                            statusBadge.className = 'status-indicator idle';
+                            statusBadge.nextSibling.textContent = " Completed";
+                            logContainer.innerHTML += "\n--- END ---\n";
+                            logContainer.scrollTop = logContainer.scrollHeight;
+                            return;
+                        }
+                        const chunk = decoder.decode(value);
+                        logContainer.innerHTML += chunk;
+                        logContainer.scrollTop = logContainer.scrollHeight; // Auto-scroll
+                        read();
+                    });
+                }
+                read();
+            })
+            .catch(error => {
+                logContainer.innerHTML += `\nError: ${error}`;
+                statusBadge.className = 'status-indicator idle';
+            });
+    }
+</script>
+{% endblock %}

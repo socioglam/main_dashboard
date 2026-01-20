@@ -1,0 +1,15 @@
+# Secrets (global)
+**/users.json
+**/token.json
+**/*credentials*.json
+**/oauth_credentials.json
+**/.env
+**/.env.*
+
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# OS
+.DS_Store
