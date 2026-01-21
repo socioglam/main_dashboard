@@ -47,7 +47,7 @@ def generate_bluesky_post_text(data):
         target_url = item.get("target_url", "")
         message += f"• {title}\n"
 
-    message += f"\n🔗 Full List: {target_url}"
+    message += f"\n🔗 Full List: <a href={target_url}>{target_url}</a>"
     message += "\n#Trending #News"
     return message
 

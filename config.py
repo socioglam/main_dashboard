@@ -18,6 +18,7 @@ class Config:
         "discord": os.path.join(BASE_DIR, "discord_posting/users.json"),
         "mastodon": os.path.join(BASE_DIR, "mastodon/users.json"),
         "pixelfed": os.path.join(BASE_DIR, "pixelfed/users.json"),
+        "trello": os.path.join(BASE_DIR, "trello/users.json"),
     }
 
     MODULE_SCHEMAS = {
@@ -36,4 +37,5 @@ class Config:
         "discord": ["token", "channel_id", "webhook_url"],
         "mastodon": ["access_token", "instance_url"],
         "pixelfed": ["access_token", "instance_url"],
+        "trello": ["api_key", "token"],
     }

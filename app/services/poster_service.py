@@ -18,7 +18,9 @@ try:
     from tumblr import tumblr_main
     from discord_posting import discord_main
     from mastodon import mastodon as mastodon_main
+    from mastodon import mastodon as mastodon_main
     from pixelfed import pixelfed_post
+    from trello import trello_main
 except ImportError as e:
     print(f"Warning: Some modules could not be imported: {e}")
 
@@ -261,6 +263,19 @@ def run_pixelfed(account, data_items):
         return f"❌ Pixelfed: ERROR ({e})"
 
 
+def run_trello(account, html_content, post_title):
+    try:
+        trello_main.post_content(
+            post_title,
+            html_content,
+            api_key=account.get("api_key"),
+            token=account.get("token"),
+        )
+        return "✅ Trello: COMPLETED"
+    except Exception as e:
+        return f"❌ Trello: ERROR ({e})"
+
+
 def start_poster_thread(logger, target_platform, module_paths, source_api_url):
 
     def background_task():
@@ -325,7 +340,9 @@ def start_poster_thread(logger, target_platform, module_paths, source_api_url):
                 add_tasks("tumblr", run_tumblr)
                 add_tasks("discord", run_discord, uses_html=False)
                 add_tasks("mastodon", run_mastodon, uses_html=False)
+                add_tasks("mastodon", run_mastodon, uses_html=False)
                 add_tasks("pixelfed", run_pixelfed, uses_html=False)
+                add_tasks("trello", run_trello)
 
                 for future in concurrent.futures.as_completed(futures):
                     try:
