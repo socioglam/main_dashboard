@@ -194,12 +194,22 @@ def run_hashnode(account, html_content, post_title):
         return f"❌ Hashnode: ERROR ({e})"
 
 
-def run_pastebin(account, html_content, post_title):
+def run_pastebin(account, data):
     try:
-        pastebin_main.post_to_pastebin(
-            post_title, html_content, api_key=account.get("api_key")
+        today = datetime.date.today().strftime("%Y-%m-%d")
+        post_title = f"🔥 Trending Updates - {today}"
+
+        content = "Here are the latest updates:\n\n"
+        for item in data:
+            item_title = item.get("title", "No Title")
+            item_url = item.get("target_url", "#")
+            content += f"**{item_title}**\n{item_url}\n\n"
+
+        content += "\n(Automated via Poster Service)"
+        sucess_post_res = pastebin_main.post_to_pastebin(
+            post_title, content, api_key=account.get("api_key")
         )
-        return "✅ Pastebin: COMPLETED"
+        return f"✅ Pastebin: POST Link: {sucess_post_res}"
     except Exception as e:
         return f"❌ Pastebin: ERROR ({e})"
 
@@ -263,11 +273,22 @@ def run_pixelfed(account, data_items):
         return f"❌ Pixelfed: ERROR ({e})"
 
 
-def run_trello(account, html_content, post_title):
+def run_trello(account, data):
     try:
+        today = datetime.date.today().strftime("%Y-%m-%d")
+        title = f"🔥 Trending Updates - {today}"
+
+        content = "Here are the latest updates:\n\n"
+        for item in data:
+            item_title = item.get("title", "No Title")
+            item_url = item.get("target_url", "#")
+            content += f"**{item_title}**\n{item_url}\n\n"
+
+        content += "\n(Automated via Poster Service)"
+
         trello_main.post_content(
-            post_title,
-            html_content,
+            title,
+            content,
             api_key=account.get("api_key"),
             token=account.get("token"),
         )
@@ -336,13 +357,13 @@ def start_poster_thread(logger, target_platform, module_paths, source_api_url):
                 add_tasks("dev_to", run_devto)
                 add_tasks("bluesky", run_bluesky, uses_html=False)
                 add_tasks("hashnode", run_hashnode)
-                add_tasks("pastebin", run_pastebin)
+                add_tasks("pastebin", run_pastebin, uses_html=False)
                 add_tasks("tumblr", run_tumblr)
                 add_tasks("discord", run_discord, uses_html=False)
                 add_tasks("mastodon", run_mastodon, uses_html=False)
                 add_tasks("mastodon", run_mastodon, uses_html=False)
                 add_tasks("pixelfed", run_pixelfed, uses_html=False)
-                add_tasks("trello", run_trello)
+                add_tasks("trello", run_trello, uses_html=False)
                 add_tasks("blogger_posting", run_blogger)
                 add_tasks("wordpress_posting", run_wordpress)
 

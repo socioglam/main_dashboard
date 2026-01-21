@@ -1,21 +1,18 @@
-from atproto import Client, models
+from atproto import Client, models, client_utils
 import requests
 import datetime
 import datetime as dt
 
 # ================= 1. CONFIGURATION (SETTINGS) =================
 
-# --- CONTENT SOURCE ---
 SOURCE_API_URL = "https://www.livyalife.com/api/all-links-data"
 FIXED_LINK = "https://www.livyalife.com/daily-feed"
 TODAY_DATE = dt.date.today().strftime("%Y-%m-%d")
 
-# --- BLUESKY SETTINGS ---
 BSKY_HANDLE = "indexops.bsky.social"
-BSKY_PASSWORD = ""
+BSKY_PASSWORD = "" # Apna password yahan daalein
 
 # ================= 2. CONTENT GENERATOR =================
-
 
 def fetch_data():
     print("\n⏳ [Step 1] Fetching data from API...")
@@ -36,26 +33,45 @@ def fetch_data():
         return None
 
 
-def generate_bluesky_post_text(data):
-    # Bluesky has a 300 char limit (approx). We need to be concise.
-    current_time = datetime.datetime.now().strftime("%H:%M:%S")
-    message = f"🔥 Trending Updates ({current_time}) 🔥\n"
+# 👇 Maine naam wapas 'generate_bluesky_post_text' kar diya taaki server script isse dhund sake
+def generate_bluesky_post_text(item):
+    """
+    Ye function EK item (dictionary) leta hai aur uska post content banata hai.
+    NOTE: Ensure karein ki aapka main script isse 'item' pass kar raha hai, puri 'list' nahi.
+    """
+    
+    # Safety check: Agar galti se list aa gayi, toh pehla item le lo
+    if isinstance(item, list):
+        item = item[0]
 
-    # List top 2-3 titles maximum to save space
-    for item in data[:3]:
-        title = item.get("title", "Update")
-        target_url = item.get("target_url", "")
-        message += f"• {title}\n"
+    title = item.get("title", "No Title")
+    description = item.get("description", "")
+    target_url = item.get("target_url", "")
 
-    message += f"\n🔗 Full List: <a href={target_url}>{target_url}</a>"
-    message += "\n#Trending #News"
-    return message
+    # --- TextBuilder Start ---
+    tb = client_utils.TextBuilder()
+
+    # 1. Title
+    tb.text(f"🔥 {title}\n\n")
+
+    # 2. Description
+    if description:
+        tb.text(f"{description}\n\n")
+
+    # 3. Clickable Link
+    if target_url:
+        tb.text("🔗 Link: ")
+        tb.link("Click Here to Open", target_url)
+
+    tb.text("\n\n#Trending #News")
+
+    return tb
 
 
 # ================= 3. BLUESKY FUNCTION =================
 
-
 def post_to_bluesky(text, link_url=None, handle=None, password=None):
+    # 'text' argument yahan wo TextBuilder object hai jo upar se aa raha hai
     print("\n🚀 [Step 2] Uploading to Bluesky...")
 
     eff_handle = handle or BSKY_HANDLE
@@ -65,17 +81,14 @@ def post_to_bluesky(text, link_url=None, handle=None, password=None):
         client = Client()
         client.login(eff_handle, eff_password)
 
-        # Simple text post with link appended
-        # Note: atproto automatically detects links and creating facets (clickable links)
-        # is handled by the library in newer versions, or we can rely on text parsing.
-        # For simplicity and reliability based on your request:
-
-        client.send_post(text=text)
-
-        print("✅ BLUESKY SUCCESS! Post sent.")
+        # 👇 FIX: Yahan pehle 'text_builder' likha tha jo defined nahi tha. 
+        # Isse 'text' kar diya hai jo function argument hai.
+        client.send_post(text) 
+        
+        print(f"✅ Post Sent Successfully!")
 
     except Exception as e:
-        print(f"❌ Bluesky Error: {e}")
+        print(f"❌ Error posting to Bluesky: {e}")
 
 
 # ================= MAIN EXECUTION =================
@@ -87,10 +100,16 @@ if __name__ == "__main__":
     data = fetch_data()
 
     if data:
-        # 2. Prepare Content
-        post_text = generate_bluesky_post_text(data)
+        print(f"🚀 Found {len(data)} items to post.\n")
 
-        # 3. Post to Bluesky
-        post_to_bluesky(post_text, FIXED_LINK)
+        # Har item ke liye loop chalayenge
+        for item in data:
+            # Step A: Content generate karo (Function name ab sahi hai)
+            post_content = generate_bluesky_post_text(item)
+
+            # Step B: Post kar do
+            print(f"posting: {item.get('title')}")
+            post_to_bluesky(post_content)
+
     else:
-        print("❌ Data nahi mila, isliye posting cancel.")
+        print("❌ Data nahi mila.")
