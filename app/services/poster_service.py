@@ -343,6 +343,8 @@ def start_poster_thread(logger, target_platform, module_paths, source_api_url):
                 add_tasks("mastodon", run_mastodon, uses_html=False)
                 add_tasks("pixelfed", run_pixelfed, uses_html=False)
                 add_tasks("trello", run_trello)
+                add_tasks("blogger_posting", run_blogger)
+                add_tasks("wordpress_posting", run_wordpress)
 
                 for future in concurrent.futures.as_completed(futures):
                     try:

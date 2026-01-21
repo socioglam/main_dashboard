@@ -19,6 +19,8 @@ class Config:
         "mastodon": os.path.join(BASE_DIR, "mastodon/users.json"),
         "pixelfed": os.path.join(BASE_DIR, "pixelfed/users.json"),
         "trello": os.path.join(BASE_DIR, "trello/users.json"),
+        "blogger_posting": os.path.join(BASE_DIR, "blogger_posting/users.json"),
+        "wordpress_posting": os.path.join(BASE_DIR, "wordpress_posting/users.json"),
     }
 
     MODULE_SCHEMAS = {
@@ -38,4 +40,12 @@ class Config:
         "mastodon": ["access_token", "instance_url"],
         "pixelfed": ["access_token", "instance_url"],
         "trello": ["api_key", "token"],
+        "blogger_posting": ["credentials_file", "token_file", "blog_id"],
+        "wordpress_posting": [
+            "username",
+            "password",
+            "client_id",
+            "client_secret",
+            "site_domain",
+        ],
     }
