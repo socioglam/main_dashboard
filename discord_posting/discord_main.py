@@ -25,9 +25,11 @@ def post_to_discord(content, webhook_url=None, token=None, channel_id=None):
 
         if response.status_code in [200, 201]:
             data = response.json()
-            print(f"✅ Discord Success! Message sent (ID: {data['id']})")
+            # print(f"✅ Discord Success! Message sent (ID: {data['id']})")
+            return data['id']
         else:
-            print(f"❌ Discord Failed: {response.status_code} - {response.text}")
+            # print(f"❌ Discord Failed: {response.status_code} - {response.text}")
+            return f"❌ Discord Failed: {response.status_code} - {response.text}"
 
     except Exception as e:
         print(f"❌ Discord Connection Error: {e}")

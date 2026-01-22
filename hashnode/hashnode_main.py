@@ -52,7 +52,7 @@ def post_to_hashnode(title, content_html, api_token=None, publication_id=None):
                 print(f"❌ Hashnode Error: {data['errors']}")
             else:
                 post_url = data["data"]["publishPost"]["post"]["url"]
-                print(f"✅ HASHNODE SUCCESS! Link: {post_url}")
+                # print(f"✅ HASHNODE SUCCESS! Link: {post_url}")
                 return post_url
         else:
             print(f"❌ Hashnode Failed: {response.status_code} - {response.text}")

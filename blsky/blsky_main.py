@@ -112,4 +112,4 @@ if __name__ == "__main__":
             post_to_bluesky(post_content)
 
     else:
-        print("❌ Data nahi mila.")
+        print("❌ Data not found.")

@@ -88,9 +88,9 @@ def post_to_devto(title, content_html, api_key=None):
     try:
         response = requests.post(DEVTO_URL, headers=headers, json=payload)
         if response.status_code == 201:
-            print(f"✅ DEV.TO SUCCESS! Link: {response.json()['url']}")
+            return response.json()['url']
         else:
-            print(f"❌ Dev.to Failed: {response.status_code} - {response.text}")
+            return f"❌ Dev.to Failed: {response.status_code} - {response.text}"
     except Exception as e:
         print(f"❌ Dev.to Error: {e}")
 

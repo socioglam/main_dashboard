@@ -157,10 +157,10 @@ def run_linkedin(account, data_items):
 
 def run_devto(account, html_content, post_title):
     try:
-        devto_main.post_to_devto(
+        devTo_url = devto_main.post_to_devto(
             post_title, html_content, api_key=account.get("api_key")
         )
-        return "✅ Dev.to: COMPLETED"
+        return f"✅ Dev.to: {devTo_url}"
     except Exception as e:
         return f"❌ Dev.to: ERROR ({e})"
 
@@ -183,13 +183,13 @@ def run_bluesky(account, data_items):
 
 def run_hashnode(account, html_content, post_title):
     try:
-        hashnode_main.post_to_hashnode(
+        hashnode_url = hashnode_main.post_to_hashnode(
             post_title,
             html_content,
             api_token=account.get("api_token"),
             publication_id=account.get("publication_id"),
         )
-        return "✅ Hashnode: COMPLETED"
+        return f"✅ Hashnode: {hashnode_url}"
     except Exception as e:
         return f"❌ Hashnode: ERROR ({e})"
 
@@ -209,14 +209,14 @@ def run_pastebin(account, data):
         sucess_post_res = pastebin_main.post_to_pastebin(
             post_title, content, api_key=account.get("api_key")
         )
-        return f"✅ Pastebin: POST Link: {sucess_post_res}"
+        return f"✅ Pastebin: {sucess_post_res}"
     except Exception as e:
         return f"❌ Pastebin: ERROR ({e})"
 
 
 def run_tumblr(account, html_content, post_title):
     try:
-        tumblr_main.post_to_tumblr(
+        tumbler_url = tumblr_main.post_to_tumblr(
             post_title,
             html_content,
             consumer_key=account.get("consumer_key"),
@@ -225,7 +225,7 @@ def run_tumblr(account, html_content, post_title):
             oauth_secret=account.get("oauth_secret"),
             blog_name=account.get("blog_name"),
         )
-        return "✅ Tumblr: COMPLETED"
+        return f"✅ Tumblr: { tumbler_url }"
     except Exception as e:
         return f"❌ Tumblr: ERROR ({e})"
 
@@ -234,13 +234,13 @@ def run_discord(account, data_items):
     try:
         text = linkedin_main.generate_linkedin_post_text(data_items)
         full_message = text
-        discord_main.post_to_discord(
+        discord_id = discord_main.post_to_discord(
             full_message,
             token=account.get("token"),
             channel_id=account.get("channel_id"),
             webhook_url=account.get("webhook_url"),
         )
-        return "✅ Discord: COMPLETED"
+        return f"✅ Discord: {discord_id}"
     except Exception as e:
         return f"❌ Discord: ERROR ({e})"
 
@@ -286,13 +286,14 @@ def run_trello(account, data):
 
         content += "\n(Automated via Poster Service)"
 
-        trello_main.post_content(
+        trello_url = trello_main.post_content(
             title,
             content,
             api_key=account.get("api_key"),
             token=account.get("token"),
+            board_id=account.get("board_id"),
         )
-        return "✅ Trello: COMPLETED"
+        return f"✅ Trello: { trello_url }"
     except Exception as e:
         return f"❌ Trello: ERROR ({e})"
 

@@ -39,7 +39,7 @@ class Config:
         "discord": ["token", "channel_id", "webhook_url"],
         "mastodon": ["access_token", "instance_url"],
         "pixelfed": ["access_token", "instance_url"],
-        "trello": ["api_key", "token"],
+        "trello": ["api_key", "token", "board_id"],
         "blogger_posting": ["credentials_file", "token_file", "blog_id"],
         "wordpress_posting": [
             "username",
