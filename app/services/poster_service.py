@@ -170,13 +170,13 @@ def run_bluesky(account, data_items):
         text = blsky_main.generate_bluesky_post_text(data_items)
         first_link = data_items[0].get("target_url", "") if data_items else ""
 
-        blsky_main.post_to_bluesky(
+        blsky_url = blsky_main.post_to_bluesky(
             text,
             first_link,
             handle=account.get("handle"),
             password=account.get("password"),
         )
-        return "✅ Bluesky: COMPLETED"
+        return f"✅ Bluesky: { blsky_url }"
     except Exception as e:
         return f"❌ Bluesky: ERROR ({e})"
 

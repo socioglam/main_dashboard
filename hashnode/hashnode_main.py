@@ -1,11 +1,9 @@
 import requests
-import json
-import datetime
 
 # ================= 1. CONFIGURATION (SETTINGS) =================
 # Currently hardcoded based on existing file, but ideally should come from env or args.
 HASHNODE_API_TOKEN = ""
-PUBLICATION_ID = "6950ef4f1f7d88975412a1e5"
+PUBLICATION_ID = ""
 URL = "https://gql.hashnode.com"
 
 
@@ -33,10 +31,10 @@ def post_to_hashnode(title, content_html, api_token=None, publication_id=None):
         "input": {
             "publicationId": eff_pub_id,
             "title": title,
-            "contentMarkdown": content_html,  # Hashnode accepts HTML in markdown field too essentially
+            "contentMarkdown": content_html,
             "tags": [
-                {"slug": "python", "name": "Python"},
-                {"slug": "automation", "name": "Automation"},
+                {"slug": "news", "name": "news"},
+                {"slug": "daily-feed", "name": "daily"},
                 {"slug": "daily-updates", "name": "Daily Updates"},
             ],
         }

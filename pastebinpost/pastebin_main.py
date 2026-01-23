@@ -28,7 +28,7 @@ def post_to_pastebin(title, content_text, api_key=None):
     try:
         response = requests.post(URL, data=data)
         if "pastebin.com" in response.text:
-            print(f"✅ PASTEBIN SUCCESS! Link: {response.text}")
+            # print(f"✅ PASTEBIN SUCCESS! Link: {response.text}")
             return response.text
         else:
             print(f"❌ Pastebin Error: {response.text}")

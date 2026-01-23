@@ -50,9 +50,6 @@ def fetch_data_and_generate_html():
             <p style="margin-bottom: 20px;">
                 <a href="{target_url}" rel="dofollow" target="_blank" style="background-color: #007bff; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-right: 10px;">
                     { target_url }
-                </a><br />
-                <a href="{FIXED_LINK}" rel="dofollow" target="_blank" style="background-color: #28a745; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                    📅 Daily Feed
                 </a>
             </p>
             <p style="margin-top: 15px; color: #555;">
@@ -79,8 +76,8 @@ def post_to_devto(title, content_html, api_key=None):
         "article": {
             "title": title,
             "published": True,
-            "description": "Daily automated updates for car links.",
-            "tags": ["python", "automation", "cars", "dailyupdates"],
+            "description": "Daily news updates for our blog posts",
+            "tags": ["news", "blog", "trending", "dailyupdates"],
             "body_markdown": content_html,
         }
     }
