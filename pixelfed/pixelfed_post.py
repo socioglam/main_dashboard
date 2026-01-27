@@ -35,6 +35,7 @@ def post_to_pixelfed(message, image_path=None):
         print("✅ Pixelfed Post successful!")
         try:
             print("Link:", response.json().get("url"))
+            return response.json().get("url")
         except:
             print("Response:", response.text)
         return True

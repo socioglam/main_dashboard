@@ -178,7 +178,7 @@ def run_bluesky(account, data_items):
         )
         return f"✅ Bluesky: { blsky_url }"
     except Exception as e:
-        return f"❌ Bluesky: ERROR ({e})"
+        return f"❌ Bluesky: ERROR"
 
 
 def run_hashnode(account, html_content, post_title):
@@ -249,12 +249,12 @@ def run_mastodon(account, data_items):
     try:
         text = linkedin_main.generate_linkedin_post_text(data_items)
         full_message = text
-        mastodon_main.post_to_mastodon(
+        mastodon_url = mastodon_main.post_to_mastodon(
             full_message,
             access_token=account.get("access_token"),
             instance_url=account.get("instance_url"),
         )
-        return "✅ Mastodon: COMPLETED"
+        return f"✅ Mastodon: { mastodon_url }"
     except Exception as e:
         return f"❌ Mastodon: ERROR ({e})"
 
@@ -263,12 +263,12 @@ def run_pixelfed(account, data_items):
     try:
         text = linkedin_main.generate_linkedin_post_text(data_items)
         full_message = text
-        pixelfed_post.post_to_pixelfed(
+        pixelfed_url = pixelfed_post.post_to_pixelfed(
             full_message,
             access_token=account.get("access_token"),
             instance_url=account.get("instance_url"),
         )
-        return "✅ Pixelfed: COMPLETED"
+        return f"✅ Pixelfed: { pixelfed_url }"
     except Exception as e:
         return f"❌ Pixelfed: ERROR ({e})"
 

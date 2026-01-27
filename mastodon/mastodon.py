@@ -24,10 +24,11 @@ def post_to_mastodon(message, access_token=None, instance_url=None):
 
     if response.status_code == 200:
         print("✅ Post successful!")
-        print("Link:", response.json().get("url"))
+        return response.json().get("url")
     else:
         print(f"❌ Failed: {response.status_code}")
-        print(response.text)
+        # print(response.text)
+        return response.text
 
 
 if __name__ == "__main__":
