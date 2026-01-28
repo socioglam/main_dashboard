@@ -108,6 +108,35 @@
 <h3 style="margin-bottom: 1rem;">Live Logs</h3>
 <div class="log-container" id="log-output">Waiting for action...</div>
 
+<div class="card" style="margin-top: 2rem; border-color: #eab308; display: none;" id="report-card">
+    <div class="header-actions" style="margin-bottom: 1rem;">
+        <h3 style="margin: 0;">📊 Latest Run Report</h3>
+        <span style="font-size: 0.9rem; color: var(--text-muted);">Results from run at <span
+                id="report-time"></span></span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2rem;">
+        <div
+            style="background: rgba(34, 197, 94, 0.1); border: 1px solid #22c55e; border-radius: 8px; padding: 1.5rem; text-align: center;">
+            <div id="success-count" style="font-size: 2rem; font-weight: bold; color: #22c55e; margin-bottom: 0.5rem;">-
+            </div>
+            <div style="color: #22c55e; font-weight: 600;">✅ Successful Posts</div>
+        </div>
+        <div
+            style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px; padding: 1.5rem; text-align: center;">
+            <div id="fail-count" style="font-size: 2rem; font-weight: bold; color: #ef4444; margin-bottom: 0.5rem;">-
+            </div>
+            <div style="color: #ef4444; font-weight: 600;">❌ Failed Posts</div>
+        </div>
+    </div>
+
+    <h4 style="margin-bottom: 1rem; color: #ef4444;">📋 Failed Credentials Detail</h4>
+    <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;"
+        id="failed-creds-list">
+        <!-- Dynamic Content -->
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -115,7 +144,10 @@
     function startPublishing(platform = null) {
         const logContainer = document.getElementById('log-output');
         const statusBadge = document.querySelector('.status-indicator');
-        const statusText = document.querySelector('#status-badge');
+        const reportCard = document.getElementById('report-card');
+
+        // Hide previous report
+        reportCard.style.display = 'none';
 
         logContainer.innerHTML = "Initializing...\n";
         statusBadge.className = 'status-indicator running';
@@ -139,11 +171,12 @@
                             statusBadge.nextSibling.textContent = " Completed";
                             logContainer.innerHTML += "\n--- END ---\n";
                             logContainer.scrollTop = logContainer.scrollHeight;
+                            fetchReport(); // Fetch report after completion
                             return;
                         }
                         const chunk = decoder.decode(value);
                         logContainer.innerHTML += chunk;
-                        logContainer.scrollTop = logContainer.scrollHeight; // Auto-scroll
+                        logContainer.scrollTop = logContainer.scrollHeight;
                         read();
                     });
                 }
@@ -152,6 +185,49 @@
             .catch(error => {
                 logContainer.innerHTML += `\nError: ${error}`;
                 statusBadge.className = 'status-indicator idle';
+            });
+    }
+
+    function fetchReport() {
+        fetch('/report')
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) return;
+
+                document.getElementById('report-card').style.display = 'block';
+                document.getElementById('report-time').textContent = data.timestamp;
+                document.getElementById('success-count').textContent = data.success_count;
+                document.getElementById('fail-count').textContent = data.fail_count;
+
+                const listContainer = document.getElementById('failed-creds-list');
+                listContainer.innerHTML = '';
+
+                if (data.failed_credentials.length === 0) {
+                    listContainer.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--text-muted);">No failures recorded! 🎉</div>';
+                    return;
+                }
+
+                data.failed_credentials.forEach((item, index) => {
+                    const credsStr = JSON.stringify(item.credentials, null, 2);
+                    const errorMsg = item.error ? `Error: ${item.error}` : 'Unknown Issue';
+
+                    const moduleHtml = `
+                    <div style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.2);">
+                        <strong style="color: #ef4444;">Module: ${item.module}</strong>
+                        <div style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">${errorMsg}</div>
+                    </div>
+                `;
+
+                    const credsHtml = `
+                    <div style="padding: 1rem; font-family: monospace; font-size: 0.85rem; background: rgba(0,0,0,0.1);">
+                        <pre style="margin: 0; white-space: pre-wrap;">${credsStr}</pre>
+                    </div>
+                `;
+
+                    const div = document.createElement('div');
+                    div.innerHTML = moduleHtml + credsHtml;
+                    listContainer.appendChild(div);
+                });
             });
     }
 </script>

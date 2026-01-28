@@ -71,10 +71,7 @@ def generate_html_internal(data):
                 <a href="{target_url}" rel="dofollow" target="_blank">{target_url}</a>
             </p>
 
-            <p style="margin-top: 15px; color: #555;">
-                <strong>Description:</strong><br>
-                {description}
-            </p>
+            { description }
         </div>
         """
     return full_html
@@ -107,7 +104,7 @@ def run_blogger(account, html_content, post_title):
 
 def run_wordpress(account, html_content, post_title):
     try:
-        wordpress_main.post_to_wordpress(
+        wordpress_url = wordpress_main.post_to_wordpress(
             post_title,
             html_content,
             username=account.get("username"),
@@ -116,7 +113,7 @@ def run_wordpress(account, html_content, post_title):
             client_secret=account.get("client_secret"),
             site_domain=account.get("site_domain"),
         )
-        return "✅ WordPress: COMPLETED"
+        return f"✅ WordPress: { wordpress_url }"
     except Exception as e:
         return f"❌ WordPress: ERROR ({e})"
 
@@ -342,8 +339,12 @@ def start_poster_thread(logger, target_platform, module_paths, source_api_url):
             # 4. Dispatch Tasks
             logger.log("🚀 Starting posting process...")
 
+            success_count = 0
+            fail_count = 0
+            failed_credentials = []
+
             with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-                futures = []
+                future_to_account = {}
 
                 def add_tasks(module_name, func, uses_html=True):
                     if target_platform and target_platform != module_name:
@@ -352,7 +353,11 @@ def start_poster_thread(logger, target_platform, module_paths, source_api_url):
                         args = (
                             (acc, full_html, post_title) if uses_html else (acc, data)
                         )
-                        futures.append(executor.submit(func, *args))
+                        future = executor.submit(func, *args)
+                        future_to_account[future] = {
+                            "module": module_name,
+                            "account": acc,
+                        }
 
                 add_tasks("linkedin", run_linkedin, uses_html=False)
                 add_tasks("dev_to", run_devto)
@@ -362,20 +367,70 @@ def start_poster_thread(logger, target_platform, module_paths, source_api_url):
                 add_tasks("tumblr", run_tumblr)
                 add_tasks("discord", run_discord, uses_html=False)
                 add_tasks("mastodon", run_mastodon, uses_html=False)
-                add_tasks("mastodon", run_mastodon, uses_html=False)
+                # Removed duplicate mastodon line
                 add_tasks("pixelfed", run_pixelfed, uses_html=False)
                 add_tasks("trello", run_trello, uses_html=False)
                 add_tasks("blogger_posting", run_blogger)
                 add_tasks("wordpress_posting", run_wordpress)
 
-                for future in concurrent.futures.as_completed(futures):
+                for future in concurrent.futures.as_completed(future_to_account):
+                    details = future_to_account[future]
+                    module_name = details["module"]
+                    account = details["account"]
                     try:
                         result = future.result()
                         logger.log(
                             f"[{datetime.datetime.now().strftime('%H:%M:%S')}] {result}"
                         )
+                        if "✅" in result:
+                            success_count += 1
+                        else:
+                            fail_count += 1
+                            failed_credentials.append(
+                                {"module": module_name, "credentials": account}
+                            )
+
                     except Exception as exc:
                         logger.log(f"❌ Exception in task: {exc}")
+                        fail_count += 1
+                        failed_credentials.append(
+                            {
+                                "module": module_name,
+                                "credentials": account,
+                                "error": str(exc),
+                            }
+                        )
+
+            logger.log("--------------------------------------------------")
+            logger.log(f"📊 Summary:")
+            logger.log(f"   ✅ Successful: {success_count}")
+            logger.log(f"   ❌ Failed:     {fail_count}")
+
+            if failed_credentials:
+                logger.log("\n📋 Failed Credentials List:")
+                for i, fail in enumerate(failed_credentials, 1):
+                    logger.log(f"   {i}. Module: {fail['module']}")
+                    logger.log(
+                        f"      Credentials: {json.dumps(fail['credentials'], indent=2)}"
+                    )
+                    if "error" in fail:
+                        logger.log(f"      Error: {fail['error']}")
+                    logger.log("-" * 30)
+
+            report_data = {
+                "success_count": success_count,
+                "fail_count": fail_count,
+                "failed_credentials": failed_credentials,
+                "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            }
+
+            report_path = os.path.join(os.getcwd(), "app", "latest_report.json")
+            try:
+                with open(report_path, "w") as f:
+                    json.dump(report_data, f, indent=4)
+                logger.log(f"📄 Report saved to {report_path}")
+            except Exception as e:
+                logger.log(f"❌ Failed to save report: {e}")
 
             logger.log("🏁 All tasks completed.")
         except Exception as e:

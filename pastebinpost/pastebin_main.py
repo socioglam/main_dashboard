@@ -31,10 +31,12 @@ def post_to_pastebin(title, content_text, api_key=None):
             # print(f"✅ PASTEBIN SUCCESS! Link: {response.text}")
             return response.text
         else:
-            print(f"❌ Pastebin Error: {response.text}")
+            # print(f"❌ Pastebin Error: {response.text}")
+            return response.text
 
     except Exception as e:
         print(f"❌ Pastebin Connection Error: {e}")
+        return f"❌ Pastebin Connection Error"
 
 
 if __name__ == "__main__":

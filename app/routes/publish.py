@@ -1,4 +1,13 @@
-from flask import Blueprint, request, Response, stream_with_context, current_app
+from flask import (
+    Blueprint,
+    request,
+    Response,
+    stream_with_context,
+    current_app,
+    jsonify,
+)
+import os
+import json
 from app.utils.logger import Logger
 from app.services.poster_service import start_poster_thread
 
@@ -26,3 +35,17 @@ def publish():
             yield msg
 
     return Response(stream_with_context(generate()), mimetype="text/plain")
+
+
+@publish_bp.route("/report", methods=["GET"])
+def get_report():
+    report_path = os.path.join(os.getcwd(), "app", "latest_report.json")
+    if os.path.exists(report_path):
+        try:
+            with open(report_path, "r") as f:
+                data = json.load(f)
+            return jsonify(data)
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+    else:
+        return jsonify({"error": "No report found"}), 404

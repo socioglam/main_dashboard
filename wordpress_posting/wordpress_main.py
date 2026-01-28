@@ -135,11 +135,14 @@ def post_to_wordpress(
     try:
         response = requests.post(post_url, headers=headers, json=post_data)
         if response.status_code == 200:
-            print(f"✅ WORDPRESS SUCCESS! Link: {response.json()['short_URL']}")
+            # print(f"✅ WORDPRESS SUCCESS! Link: {response.json()['short_URL']}")
+            return response.json()['short_URL']
         else:
-            print(f"❌ WordPress Failed: {response.status_code} - {response.text}")
+            # print(f"❌ WordPress Failed: {response.status_code} - {response.text}")
+            return response.status_code - response.text
     except Exception as e:
         print(f"❌ WordPress Error: {e}")
+        return "❌ Wordpress Failed"
 
 
 # ================= MAIN EXECUTION =================
