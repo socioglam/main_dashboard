@@ -21,6 +21,7 @@ class Config:
         "trello": os.path.join(BASE_DIR, "trello/users.json"),
         "blogger_posting": os.path.join(BASE_DIR, "blogger_posting/users.json"),
         "wordpress_posting": os.path.join(BASE_DIR, "wordpress_posting/users.json"),
+        "dropbox": os.path.join(BASE_DIR, "dropbox_integration/users.json"),
     }
 
     MODULE_SCHEMAS = {
@@ -29,6 +30,7 @@ class Config:
         "bluesky": ["handle", "password"],
         "hashnode": ["api_token", "publication_id"],
         "pastebin": ["api_key"],
+        "dropbox": ["access_token"],
         "tumblr": [
             "consumer_key",
             "consumer_secret",

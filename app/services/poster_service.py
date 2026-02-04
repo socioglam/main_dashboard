@@ -21,6 +21,7 @@ try:
     from mastodon import mastodon as mastodon_main
     from pixelfed import pixelfed_post
     from trello import trello_main
+    from dropbox_integration import dropbox_main
     from mass_pinging import mass_ping
 except ImportError as e:
     print(f"Warning: Some modules could not be imported: {e}")
@@ -296,6 +297,19 @@ def run_trello(account, data):
         return f"❌ Trello: ERROR ({e})"
 
 
+def run_dropbox(account, html_content, post_title):
+    try:
+        # We can enable saving as HTML file
+        dropbox_path = dropbox_main.post_to_dropbox(
+            post_title,
+            html_content,
+            access_token=account.get("access_token"),
+        )
+        return f"✅ Dropbox: {dropbox_path}"
+    except Exception as e:
+        return f"❌ Dropbox: ERROR ({e})"
+
+
 def run_mass_ping_wrapper(account, data):
     # Wrapper to fit the signature expected by start_poster_thread
     # account is unused for mass ping
@@ -380,6 +394,7 @@ def start_poster_thread(logger, target_platform, module_paths, source_api_url):
                 # Removed duplicate mastodon line
                 add_tasks("pixelfed", run_pixelfed, uses_html=False)
                 add_tasks("trello", run_trello, uses_html=False)
+                add_tasks("dropbox", run_dropbox)
                 add_tasks("blogger_posting", run_blogger)
                 add_tasks("wordpress_posting", run_wordpress)
 
