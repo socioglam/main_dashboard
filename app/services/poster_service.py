@@ -21,6 +21,7 @@ try:
     from mastodon import mastodon as mastodon_main
     from pixelfed import pixelfed_post
     from trello import trello_main
+    from mass_pinging import mass_ping
 except ImportError as e:
     print(f"Warning: Some modules could not be imported: {e}")
 
@@ -295,6 +296,15 @@ def run_trello(account, data):
         return f"❌ Trello: ERROR ({e})"
 
 
+def run_mass_ping_wrapper(account, data):
+    # Wrapper to fit the signature expected by start_poster_thread
+    # account is unused for mass ping
+    try:
+        return mass_ping.run_mass_ping(data)
+    except Exception as e:
+        return f"❌ Mass Ping: ERROR ({e})"
+
+
 def start_poster_thread(logger, target_platform, module_paths, source_api_url):
 
     def background_task():
@@ -363,7 +373,7 @@ def start_poster_thread(logger, target_platform, module_paths, source_api_url):
                 add_tasks("dev_to", run_devto)
                 add_tasks("bluesky", run_bluesky, uses_html=False)
                 add_tasks("hashnode", run_hashnode)
-                add_tasks("pastebin", run_pastebin, uses_html=False)
+                # add_tasks("pastebin", run_pastebin, uses_html=False)
                 add_tasks("tumblr", run_tumblr)
                 add_tasks("discord", run_discord, uses_html=False)
                 add_tasks("mastodon", run_mastodon, uses_html=False)
@@ -372,6 +382,16 @@ def start_poster_thread(logger, target_platform, module_paths, source_api_url):
                 add_tasks("trello", run_trello, uses_html=False)
                 add_tasks("blogger_posting", run_blogger)
                 add_tasks("wordpress_posting", run_wordpress)
+
+                # Special case for mass ping: it runs once independently of accounts, or can be treated as a single task
+                # We'll run it parallel if "mass_ping" isn't excluded, or if it matches target_platform (if we want to target it specifically)
+                # But typically it runs alongside others. I'll add it as a single task.
+                if not target_platform or target_platform == "mass_ping":
+                    future = executor.submit(run_mass_ping_wrapper, {}, data)
+                    future_to_account[future] = {
+                        "module": "mass_ping",
+                        "account": {"type": "service"},
+                    }
 
                 for future in concurrent.futures.as_completed(future_to_account):
                     details = future_to_account[future]
